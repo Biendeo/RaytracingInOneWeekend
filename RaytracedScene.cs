@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -10,10 +11,14 @@ namespace RaytracingInOneWeekend {
 		public Bitmap RenderScene(int width, int height) {
 			Bitmap b = new Bitmap(width, height);
 
-			// TODO: Figure out how to reliably parallelise setting pixels.
-			// GetAllPixels(width, height).AsParallel().ForEach(t => DrawPixel(b, t.x, t.y, width, height));
-			foreach (var t in GetAllPixels(width, height)) {
-				DrawPixel(b, t.x, t.y, width, height);
+			// TODO: Figure out how to reliably parallelise setting pixels on all platforms.
+			if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) {
+				// No idea why Mac's okay with this for now.
+				GetAllPixels(width, height).AsParallel().ForAll(t => DrawPixel(b, t.x, t.y, width, height));
+			} else {
+				foreach (var t in GetAllPixels(width, height)) {
+					DrawPixel(b, t.x, t.y, width, height);
+				}
 			}
 
 			return b;
