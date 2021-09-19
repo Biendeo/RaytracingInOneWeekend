@@ -44,6 +44,15 @@ namespace RaytracingInOneWeekend {
 			return Color.FromArgb(ToColor256((1.0 - t) * 1.0 + t * 0.5), ToColor256((1.0 - t) * 1.0 + t * 0.7), 255);
 		}
 
+		private bool DoesRayHitSphere(Vec3 sphereCentre, double sphereRadius, Ray3 ray) {
+			Vec3 oc = ray.Origin - sphereCentre;
+			double a = ray.Direction.SquaredMagnitude;
+			double b = 2.0 * Vec3.Dot(oc, ray.Direction);
+			double c = oc.SquaredMagnitude - sphereRadius * sphereRadius;
+			double discriminant = b * b - 4 * a * c;
+			return discriminant > 0.0;
+		}
+
 		private void DrawPixel(Bitmap  b, int x, int y, int width, int height) {
 			double u = x * 1.0 / (width - 1);
 			double v = (height - y - 1) * 1.0 / (height - 1);
@@ -54,8 +63,11 @@ namespace RaytracingInOneWeekend {
 			Vec3 lowerLeftCorner = origin - (horizontal / 2.0) - (vertical / 2.0) - new Vec3(0.0, 0.0, FocalLength);
 
 			Ray3 r = new Ray3(Vec3.Zero, lowerLeftCorner + u * horizontal + v * vertical - origin);
-			
-			b.SetPixel(x, y, RayToColor(r));
+			if (DoesRayHitSphere(new Vec3(0.0, 0.0, -1.0), 0.5, r)) {
+				b.SetPixel(x, y, Color.Red);
+			} else {
+				b.SetPixel(x, y, RayToColor(r));
+			}
 		}
 
 		private int ToColor256(double d) {
