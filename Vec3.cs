@@ -20,11 +20,14 @@ namespace RaytracingInOneWeekend {
 
 		public static Vec3 operator-(Vec3 a, Vec3 b) => new Vec3(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
 
+		public static Vec3 operator*(double m, Vec3 a) => new Vec3(a.X * m, a.Y * m, a.Z * m);
 		public static Vec3 operator*(Vec3 a, double m) => new Vec3(a.X * m, a.Y * m, a.Z * m);
 
 		public static Vec3 operator/(Vec3 a, double m) => new Vec3(a.X / m, a.Y / m, a.Z / m);
 
 		public static Vec3 operator*(Vec3 a, Vec3 b) => new Vec3(a.Y * b.Z - a.Z * b.Y, a.Z * b.X - a.X * b.Z, a.X * b.Y - a.Y * b.X);
+
+		public Vec3 Normalized => this / Magnitude;
 
 		public double Magnitude => Math.Sqrt(X * X + Y * Y + Z * Z);
 

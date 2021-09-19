@@ -10,6 +10,10 @@ namespace RaytracingInOneWeekend {
 			Direction = direction;
 		}
 
+		public Vec3 At(double t) {
+			return Origin + Direction * t;
+		}
+
 		public override string ToString() => $"R({Origin}, {Direction})";
 	}
 }
