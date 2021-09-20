@@ -13,6 +13,13 @@ namespace RaytracingInOneWeekend {
 		private double ViewportWidth => ViewportHeight * aspectRatio;
 		private const double FocalLength = 1.0;
 
+		private HittableList world = new();
+
+		public RaytracedScene() {
+			world.Objects.Add(new Sphere(new Vec3(0.0, 0.0, -1.0), 0.5));
+			world.Objects.Add(new Sphere(new Vec3(0.0, -100.5, -1.0), 100.0));
+		}
+
 		public Bitmap RenderScene(int width, int height) {
 			Bitmap b = new Bitmap(width, height);
 			aspectRatio = width * 1.0 / height;
@@ -39,6 +46,9 @@ namespace RaytracingInOneWeekend {
 		}
 
 		private Color RayToColor(Ray3 r) {
+			if (world.Hit(r, 0.0, double.PositiveInfinity, out HitRecord hitRecord)) {
+				return Color.FromArgb(ToColor256(0.5 * (hitRecord.Normal.X + 1.0)), ToColor256(0.5 * (hitRecord.Normal.Y + 1.0)), ToColor256(0.5 * (hitRecord.Normal.Z + 1.0)));
+			}
 			Vec3 normalisedDirection = r.Direction.Normalized;
 			double t = 0.5 * (normalisedDirection.Y + 1.0);
 			return Color.FromArgb(ToColor256((1.0 - t) * 1.0 + t * 0.5), ToColor256((1.0 - t) * 1.0 + t * 0.7), 255);
@@ -53,6 +63,19 @@ namespace RaytracingInOneWeekend {
 			return discriminant > 0.0;
 		}
 
+		private double HitSphere(Vec3 sphereCentre, double sphereRadius, Ray3 ray) {
+			Vec3 oc = ray.Origin - sphereCentre;
+			double a = ray.Direction.SquaredMagnitude;
+			double halfB = Vec3.Dot(oc, ray.Direction);
+			double c = oc.SquaredMagnitude - sphereRadius * sphereRadius;
+			double discriminant = halfB * halfB - a * c;
+			if (discriminant < 0.0) {
+				return -1.0;
+			} else {
+				return (-halfB - Math.Sqrt(discriminant)) / a;
+			}
+		}
+
 		private void DrawPixel(Bitmap  b, int x, int y, int width, int height) {
 			double u = x * 1.0 / (width - 1);
 			double v = (height - y - 1) * 1.0 / (height - 1);
@@ -63,11 +86,7 @@ namespace RaytracingInOneWeekend {
 			Vec3 lowerLeftCorner = origin - (horizontal / 2.0) - (vertical / 2.0) - new Vec3(0.0, 0.0, FocalLength);
 
 			Ray3 r = new Ray3(Vec3.Zero, lowerLeftCorner + u * horizontal + v * vertical - origin);
-			if (DoesRayHitSphere(new Vec3(0.0, 0.0, -1.0), 0.5, r)) {
-				b.SetPixel(x, y, Color.Red);
-			} else {
-				b.SetPixel(x, y, RayToColor(r));
-			}
+			b.SetPixel(x, y, RayToColor(r));
 		}
 
 		private int ToColor256(double d) {
